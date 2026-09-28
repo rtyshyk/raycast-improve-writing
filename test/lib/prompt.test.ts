@@ -13,6 +13,14 @@ import { LocalStorage } from "../mocks/raycast-api";
 
 const done = (reply: string, instruction?: string): Turn => ({ reply, instruction, status: "done" });
 
+describe("DEFAULT_PROMPT", () => {
+  it("asks for commas and full stops instead of new semicolons, without using one itself", () => {
+    expect(DEFAULT_PROMPT).toContain("commas and full stops");
+    expect(DEFAULT_PROMPT).toContain("Don't introduce semicolons");
+    expect(DEFAULT_PROMPT).not.toContain(";");
+  });
+});
+
 describe("getPrompt", () => {
   it("returns the default prompt when none is saved", async () => {
     expect(await getPrompt()).toBe(DEFAULT_PROMPT);
