@@ -1,0 +1,110 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "improve-writing-openrouter",
+  "title": "Improve Writing (OpenRouter)",
+  "description": "Improve the selected text with any OpenRouter model, preview it, then replace the selection.",
+  "icon": "icon.png",
+  "author": "roman.tyshyk",
+  "license": "MIT",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Productivity"
+  ],
+  "commands": [
+    {
+      "name": "improve-writing",
+      "title": "Improve Writing",
+      "subtitle": "OpenRouter",
+      "description": "Improve the selected text, see the changes highlighted, ask for follow-ups, then paste.",
+      "mode": "view"
+    },
+    {
+      "name": "choose-model",
+      "title": "Choose Model",
+      "subtitle": "OpenRouter",
+      "description": "Pick the OpenRouter model used by Improve Writing.",
+      "mode": "view"
+    },
+    {
+      "name": "edit-prompt",
+      "title": "Edit Prompt",
+      "subtitle": "Improve Writing",
+      "description": "View and edit the prompt used by Improve Writing.",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "apiKey",
+      "title": "OpenRouter API Key",
+      "description": "Create one at openrouter.ai/keys",
+      "type": "password",
+      "required": true
+    },
+    {
+      "name": "defaultModel",
+      "title": "Default Model",
+      "description": "OpenRouter model id, used until you pick one with Choose Model",
+      "type": "textfield",
+      "default": "openai/gpt-6-luna",
+      "required": true
+    },
+    {
+      "name": "reasoningEffort",
+      "title": "Reasoning Effort",
+      "description": "For reasoning models. Lower is faster and cheaper.",
+      "type": "dropdown",
+      "default": "low",
+      "required": false,
+      "data": [
+        {
+          "title": "None",
+          "value": "none"
+        },
+        {
+          "title": "Low",
+          "value": "low"
+        },
+        {
+          "title": "Medium",
+          "value": "medium"
+        },
+        {
+          "title": "High",
+          "value": "high"
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^2.4.1",
+    "@raycast/utils": "^2.3.1",
+    "diff": "^9.0.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.2.0",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.0.0",
+    "jsdom": "^30.1.0",
+    "prettier": "^3.6.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.1"
+  },
+  "scripts": {
+    "build": "ray build",
+    "build:dist": "ray build -e dist -o dist -I --exit-on-error",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix && eslint --fix test vitest.config.mts && prettier --write test vitest.config.mts",
+    "lint": "ray lint && eslint test vitest.config.mts && prettier --check test vitest.config.mts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test"
+  }
+}

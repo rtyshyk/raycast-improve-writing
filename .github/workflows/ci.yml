@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, build, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      # Also generates raycast-env.d.ts (the Preferences type), which typecheck needs.
+      - run: npm run build:dist
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: extension-dist
+          path: dist
+          retention-days: 14

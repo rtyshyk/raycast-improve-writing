@@ -1,0 +1,40 @@
+name: Release
+
+# Push a tag like v1.2.0 to run every check and publish a GitHub release. Nothing goes to the Raycast Store.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: extension-dist
+          path: dist
+
+      - name: Package the built extension
+        run: cd dist && zip -qr "../improve-writing-openrouter-${GITHUB_REF_NAME}.zip" .
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME"
+          "improve-writing-openrouter-${GITHUB_REF_NAME}.zip"
+          --title "$GITHUB_REF_NAME"
+          --generate-notes
+          --verify-tag
