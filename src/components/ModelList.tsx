@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Icon, Keyboard, List, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Icon, Keyboard, List } from "@raycast/api";
 import { useCachedState, usePromise } from "@raycast/utils";
 import { useMemo, useState } from "react";
 import { getActiveModel, resetActiveModel, setActiveModel } from "../lib/model";
@@ -18,12 +18,13 @@ import { fetchModels, OpenRouterModel } from "../lib/openrouter";
 
 const contextTag = (tokens: number) => (tokens ? [{ tag: formatContext(tokens), tooltip: "Context window" }] : []);
 
-export function ModelList({ onPick }: { onPick?: (id: string) => void }) {
+// Opened from the result view; picking or resetting saves the choice and hands back to it.
+export function ModelList({ onPick }: { onPick: () => void }) {
   const [sort, setSort] = useState<Sort>("newest");
   const [providerFilter, setProviderFilter] = useState("all");
   // usePromise reports isLoading only while `execute` is true, which a fresh cache turns off.
   const [reloading, setReloading] = useState(false);
-  const { data: active, revalidate: reloadActive } = usePromise(getActiveModel);
+  const { data: active } = usePromise(getActiveModel);
   // Persisted across launches; refetched once a day or on ⌘R.
   const [cache, setCache] = useCachedState<ModelCache>("models", {
     fetchedAt: 0,
@@ -47,20 +48,14 @@ export function ModelList({ onPick }: { onPick?: (id: string) => void }) {
     setReloading(false);
   }
 
-  async function done(id: string, title: string) {
-    if (onPick) return onPick(id);
-    reloadActive();
-    await showToast({ style: Toast.Style.Success, title, message: id });
-  }
-
   async function pick(id: string) {
     await setActiveModel(id);
-    await done(id, "Model selected");
+    onPick();
   }
 
   async function reset() {
     await resetActiveModel();
-    await done(await getActiveModel(), "Using preference default");
+    onPick();
   }
 
   const item = (model: OpenRouterModel) => (
@@ -112,7 +107,7 @@ export function ModelList({ onPick }: { onPick?: (id: string) => void }) {
   return (
     <List
       isLoading={isLoading || reloading}
-      navigationTitle={`Choose Model · ${sort === "newest" ? "newest first" : "cheapest first"}`}
+      navigationTitle="Choose Model"
       searchBarPlaceholder="Search OpenRouter models…"
       searchBarAccessory={
         <List.Dropdown tooltip="Provider" value={providerFilter} onChange={setProviderFilter}>
@@ -128,7 +123,7 @@ export function ModelList({ onPick }: { onPick?: (id: string) => void }) {
       {current && <List.Section title="Current">{item(current)}</List.Section>}
       <List.Section
         title="Models"
-        subtitle={`${visible.length} · in/out per 1M tokens${fetchedAt ? ` · updated ${formatAge(Date.now() - fetchedAt)}` : ""}`}
+        subtitle={`${visible.length} · ${sort === "newest" ? "newest" : "cheapest"} first · in/out per 1M tokens${fetchedAt ? ` · updated ${formatAge(Date.now() - fetchedAt)}` : ""}`}
       >
         {visible.map(item)}
       </List.Section>
