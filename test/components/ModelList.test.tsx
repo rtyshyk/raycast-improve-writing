@@ -38,10 +38,10 @@ const row = (id: string) => rows().find((r) => r.querySelector('[data-part="subt
 const clickAction = (container: HTMLElement, name: string) =>
   fireEvent.click(within(container).getByRole("button", { name }));
 
-async function open(props: Parameters<typeof ModelList>[0] = {}) {
-  const view = render(<ModelList {...props} />);
+async function open(onPick = vi.fn()) {
+  const view = render(<ModelList onPick={onPick} />);
   await waitFor(() => expect(rows()).toHaveLength(MODELS.length));
-  return view;
+  return { ...view, onPick };
 }
 
 describe("ModelList", () => {
@@ -95,59 +95,30 @@ describe("ModelList", () => {
   it("toggles between newest-first and cheapest-first", async () => {
     mockOpenRouter({ models: MODELS });
     await open();
-    expect(screen.getByTestId("list").dataset.title).toBe("Choose Model · newest first");
+    expect(screen.getByTestId("list").dataset.title).toBe("Choose Model");
+    expect(modelsSection().dataset.subtitle).toMatch(/^4 · newest first · /);
     clickAction(row("openai/gpt-6-luna"), "Sort by Price");
     expect(ids()).toEqual(["stealth/free-alpha", "openai/gpt-6-luna", "anthropic/claude-sonnet-5", "openai/gpt-5.5"]);
-    expect(screen.getByTestId("list").dataset.title).toBe("Choose Model · cheapest first");
+    expect(modelsSection().dataset.subtitle).toMatch(/^4 · cheapest first · /);
     clickAction(row("openai/gpt-6-luna"), "Sort by Newest");
-    expect(screen.getByTestId("list").dataset.title).toBe("Choose Model · newest first");
+    expect(modelsSection().dataset.subtitle).toMatch(/^4 · newest first · /);
   });
-
-  it("Use Model saves the pick, confirms it and moves the checkmark", async () => {
+  it("Use Model saves the pick and hands back to the result view", async () => {
     mockOpenRouter({ models: MODELS });
-    await open();
+    const { onPick } = await open();
     clickAction(row("anthropic/claude-sonnet-5"), "Use Model");
-    await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: "Model selected", message: "anthropic/claude-sonnet-5" }),
-      ),
-    );
+    await waitFor(() => expect(onPick).toHaveBeenCalledOnce());
     expect(await LocalStorage.getItem("activeModel")).toBe("anthropic/claude-sonnet-5");
-    await waitFor(() => expect(row("anthropic/claude-sonnet-5").dataset.icon).toBe("CheckCircle"));
-  });
-
-  it("Use Model calls onPick instead of showing a toast when pushed from the result view", async () => {
-    const onPick = vi.fn();
-    mockOpenRouter({ models: MODELS });
-    await open({ onPick });
-    clickAction(row("openai/gpt-5.5"), "Use Model");
-    await waitFor(() => expect(onPick).toHaveBeenCalledWith("openai/gpt-5.5"));
-    expect(await LocalStorage.getItem("activeModel")).toBe("openai/gpt-5.5");
     expect(showToast).not.toHaveBeenCalled();
   });
-
-  it("Reset to Preference Default clears the pick", async () => {
+  it("Reset to Preference Default clears the pick and hands back", async () => {
     await LocalStorage.setItem("activeModel", "openai/gpt-5.5");
     mockOpenRouter({ models: MODELS });
-    await open();
+    const { onPick } = await open();
     clickAction(row("openai/gpt-5.5"), "Reset to Preference Default");
-    await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: "Using preference default", message: "openai/gpt-6-luna" }),
-      ),
-    );
+    await waitFor(() => expect(onPick).toHaveBeenCalledOnce());
     expect(await LocalStorage.getItem("activeModel")).toBeUndefined();
   });
-
-  it("Reset calls onPick with the preference model when pushed", async () => {
-    await LocalStorage.setItem("activeModel", "openai/gpt-5.5");
-    const onPick = vi.fn();
-    mockOpenRouter({ models: MODELS });
-    await open({ onPick });
-    clickAction(row("openai/gpt-5.5"), "Reset to Preference Default");
-    await waitFor(() => expect(onPick).toHaveBeenCalledWith("openai/gpt-6-luna"));
-  });
-
   it("copies the model id and links to its OpenRouter page", async () => {
     mockOpenRouter({ models: MODELS });
     await open();
@@ -164,7 +135,7 @@ describe("ModelList cache", () => {
     const api = mockOpenRouter({ models: MODELS });
     const first = await open();
     expect(api.modelCalls()).toHaveLength(1);
-    expect(modelsSection().dataset.subtitle).toBe("4 · in/out per 1M tokens · updated just now");
+    expect(modelsSection().dataset.subtitle).toBe("4 · newest first · in/out per 1M tokens · updated just now");
     first.unmount();
 
     await open();
@@ -199,7 +170,7 @@ describe("ModelList cache", () => {
 
   it("shows a failure toast when the list can't be loaded", async () => {
     mockOpenRouter({ modelsStatus: 503 });
-    render(<ModelList />);
+    render(<ModelList onPick={vi.fn()} />);
     await waitFor(() =>
       expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ title: "Couldn't load OpenRouter models" })),
     );

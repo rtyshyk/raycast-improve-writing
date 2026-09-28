@@ -1,9 +1,9 @@
-import { Action, ActionPanel, Form, Icon, showHUD } from "@raycast/api";
+import { Action, ActionPanel, Form, Icon } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import { useState } from "react";
 import { DEFAULT_PROMPT, getPrompt, OUTPUT_CONTRACT, savePrompt } from "../lib/prompt";
 
-export function PromptForm({ onSaved }: { onSaved?: () => void }) {
+export function PromptForm({ onSaved }: { onSaved: () => void }) {
   const { data: saved, isLoading } = usePromise(getPrompt);
   const [draft, setDraft] = useState<string>();
   const prompt = draft ?? saved ?? "";
@@ -11,8 +11,7 @@ export function PromptForm({ onSaved }: { onSaved?: () => void }) {
   async function save() {
     if (isLoading) return;
     await savePrompt(prompt);
-    if (onSaved) onSaved();
-    else await showHUD("Prompt saved");
+    onSaved();
   }
 
   return (

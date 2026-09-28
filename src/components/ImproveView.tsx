@@ -154,7 +154,6 @@ export function ImproveView({ original }: { original: string }) {
       isShowingDetail
       filtering={false}
       isLoading={streaming}
-      navigationTitle="Improve Writing"
       searchText={input}
       onSearchTextChange={setInput}
       searchBarPlaceholder="Ask for changes, e.g. more casual, and press ↵"
