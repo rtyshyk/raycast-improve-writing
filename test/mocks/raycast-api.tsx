@@ -1,4 +1,5 @@
 // In-memory stand-in for @raycast/api. UI components render plain DOM so tests can query and click them.
+import path from "node:path";
 import { ReactNode } from "react";
 import { vi } from "vitest";
 
@@ -16,7 +17,7 @@ export const environment = {
   commandName: "improve-writing",
   commandMode: "view",
   supportPath: "/tmp/raycast-test",
-  assetsPath: "/tmp/raycast-test/assets",
+  assetsPath: path.resolve("assets"),
   isDevelopment: false,
   raycastVersion: "2.5.2",
 };

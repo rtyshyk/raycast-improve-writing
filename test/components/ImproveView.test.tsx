@@ -251,6 +251,49 @@ describe("ImproveView follow-ups", () => {
   });
 });
 
+describe("ImproveView presets", () => {
+  const presets = ["Shorter", "More Formal", "More Casual", "Fix Grammar Only", "Translate to English", "Humanize"];
+  const lastMessage = (api: Api, index: number) =>
+    (api.chatCalls()[index].body!.messages as { role: string; content: string }[]).at(-1)!;
+
+  it("offers the presets once a version is done, after the other actions", async () => {
+    const { api } = await openView();
+    expect(actionTitles(item("Improved"))).not.toContain("Shorter");
+    await finishWith(api, 0, "Hello world.");
+    expect(actionTitles(item("Improved")).slice(-presets.length)).toEqual(presets);
+    expect(actionTitles(item("Original"))[0]).toBe("Regenerate");
+  });
+
+  it("revises the latest version and titles it with the preset", async () => {
+    const { api } = await openView();
+    await finishWith(api, 0, "Hello world, how are you doing today?");
+    fireEvent.click(action(item("Improved"), "Shorter"));
+    await waitFor(() => expect(api.streams).toHaveLength(2));
+    expect(titles()).toEqual(["Shorter", "Improved", "Original"]);
+    expect(lastMessage(api, 1)).toEqual({
+      role: "user",
+      content: "Revise your last version: make it shorter\nReply with the full revised text only.",
+    });
+
+    await finishWith(api, 1, "Hi, how are you?");
+    fireEvent.click(action(item("Shorter"), "Regenerate"));
+    await waitFor(() => expect(api.streams).toHaveLength(3));
+    expect(titles()).toEqual(["Shorter", "Improved", "Original"]);
+  });
+
+  it("Humanize sends the humanizer guide", async () => {
+    const { api } = await openView();
+    await finishWith(api, 0, "Hello world.");
+    fireEvent.click(action(item("Improved"), "Humanize"));
+    await waitFor(() => expect(api.streams).toHaveLength(2));
+    expect(titles()).toEqual(["Humanize", "Improved", "Original"]);
+    const { content } = lastMessage(api, 1);
+    expect(content).toMatch(/^Revise your last version: remove the signs of AI writing/);
+    expect(content).toContain("<guide>\n---\nname: humanizer\n");
+    expect(content).toContain("# Humanizer: remove AI writing patterns");
+  });
+});
+
 describe("ImproveView regenerate", () => {
   it("replaces the first version with a new sample", async () => {
     const { api } = await openView();

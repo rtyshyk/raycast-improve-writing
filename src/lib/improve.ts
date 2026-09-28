@@ -5,7 +5,7 @@ import { buildMessages, cleanReply, getPrompt, Turn } from "./prompt";
 
 export const FLUSH_MS = 80;
 
-export type TurnState = Omit<Turn, "instruction">;
+export type TurnState = Omit<Turn, "instruction" | "title">;
 
 type GenerateOptions = {
   apiKey: string;

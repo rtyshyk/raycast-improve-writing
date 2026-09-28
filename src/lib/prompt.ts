@@ -17,8 +17,14 @@ export async function savePrompt(prompt: string) {
   else await LocalStorage.setItem(STORAGE_KEY, value);
 }
 
-// The first turn has no instruction; each later turn revises the reply before it.
-export type Turn = { instruction?: string; reply: string; status: "streaming" | "done" | "failed"; error?: string };
+// The first turn has no instruction; each later turn revises the reply before it. A preset's turn shows its title.
+export type Turn = {
+  instruction?: string;
+  title?: string;
+  reply: string;
+  status: "streaming" | "done" | "failed";
+  error?: string;
+};
 
 const revise = (instruction: string): ChatMessage => ({
   role: "user",

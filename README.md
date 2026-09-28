@@ -1,19 +1,18 @@
 # Improve Writing (OpenRouter)
 
-A Raycast 2 extension that works like Raycast AI's "Improve Writing", but runs on any OpenRouter model with your own key.
+Improve the selected text with any [OpenRouter](https://openrouter.ai) model and your own API key, see every change highlighted, and refine it with follow-ups before you paste.
 
 Select text in any app and run **Improve Writing**. The result streams in, then shows the changes highlighted against your selection: green for added text, red and struck through for removed text. Press ↵ to paste it over the selection.
 
-Type a follow-up in the search bar (e.g. "more casual", "shorter", "translate to Ukrainian") and press ↵ to revise the result. Each version stays in the list on the left, so ↑/↓ and ↵ paste an earlier one.
+Type a follow-up in the search bar (e.g. "more casual", "shorter", "translate to Ukrainian") and press ↵ to revise the result, or pick a preset with ⌘1…⌘6. Each version stays in the list on the left, so ↑/↓ and ↵ paste an earlier one.
 
-## Install
+## Setup
 
-```sh
-npm install
-npm run dev   # imports the extension into Raycast; it stays after you stop the dev server
-```
+1. Create an API key on the [OpenRouter Keys page](https://openrouter.ai/keys).
+2. Run **Improve Writing** and paste the key when Raycast asks for it. Raycast keeps it in its encrypted local storage.
+3. Optionally, assign a hotkey to **Improve Writing** in Raycast Settings → Extensions.
 
-Raycast asks for your OpenRouter API key on first run (https://openrouter.ai/keys). Assign a hotkey to **Improve Writing** in Raycast Settings → Extensions.
+The text you improve is sent to OpenRouter and the model's provider. Requests are billed to your OpenRouter account at the model's price, shown in the model list (⌘M).
 
 ## Shortcuts
 
@@ -24,6 +23,14 @@ Raycast asks for your OpenRouter API key on first run (https://openrouter.ai/key
 | ⌘R  | Regenerate                                                      |
 | ⌘M  | Change Model… (the pick is saved, then the text is regenerated) |
 | ⌘E  | Edit Prompt… (save, then the text is regenerated)               |
+| ⌘1  | Shorter                                                         |
+| ⌘2  | More Formal                                                     |
+| ⌘3  | More Casual                                                     |
+| ⌘4  | Fix Grammar Only (back to the original, no rewording)           |
+| ⌘5  | Translate to English                                            |
+| ⌘6  | Humanize (removes signs of AI writing)                          |
+
+Humanize follows the [blader/humanizer](https://github.com/blader/humanizer) guide. The guide is sent with the request, which adds about 8k input tokens to it and to every later follow-up in the same view.
 
 A script can pass the text directly instead of the selection: `raycast://extensions/roman.tyshyk/improve-writing-openrouter/improve-writing?context={"text":"…"}` (URL-encoded).
 
@@ -40,4 +47,4 @@ A script can pass the text directly instead of the selection: `raycast://extensi
 - Each row shows the input and output price per 1M tokens and the context size.
 - The search bar dropdown filters by provider, and ⌘⇧P switches to sorting by price.
 
-Developing, CI and publishing: see [CONTRIBUTING.md](CONTRIBUTING.md).
+Developing, CI and publishing: see [CONTRIBUTING.md](https://github.com/rtyshyk/raycast-improve-writing/blob/main/CONTRIBUTING.md).
