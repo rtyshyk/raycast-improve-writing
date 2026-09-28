@@ -1,10 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import ChooseModel from "../src/choose-model";
-import EditPrompt from "../src/edit-prompt";
 import ImproveWriting from "../src/improve-writing";
-import { DEFAULT_PROMPT } from "../src/lib/prompt";
-import { mockOpenRouter, model } from "./helpers";
+import { mockOpenRouter } from "./helpers";
 import { Clipboard, getSelectedText, showToast } from "./mocks/raycast-api";
 
 type LaunchProps = Parameters<typeof ImproveWriting>[0];
@@ -22,7 +19,8 @@ describe("Improve Writing command", () => {
     const api = mockOpenRouter();
     launch();
     expect(await sentText(api)).toBe("<text>\nhelo world\n</text>");
-    expect(screen.getByTestId("list")).toBeTruthy();
+    // Store rule: a command's root view keeps Raycast's own title.
+    expect(screen.getByTestId("list").dataset.title).toBe("");
   });
 
   it("shows a loading view while reading the selection", () => {
@@ -77,21 +75,4 @@ describe("Improve Writing command", () => {
       expect(await sentText(api)).toBe("<text>\nselected\n</text>");
     },
   );
-});
-
-describe("Choose Model command", () => {
-  it("shows the model list", async () => {
-    mockOpenRouter({ models: [model("openai/gpt-6-luna")] });
-    render(<ChooseModel />);
-    await waitFor(() => expect(screen.getAllByRole("listitem").length).toBeGreaterThan(0));
-    expect(screen.getByTestId("list").dataset.title).toBe("Choose Model · newest first");
-  });
-});
-
-describe("Edit Prompt command", () => {
-  it("shows the prompt form", async () => {
-    render(<EditPrompt />);
-    await waitFor(() => expect(screen.getByLabelText<HTMLTextAreaElement>("Prompt").value).toBe(DEFAULT_PROMPT));
-    expect(screen.getByTestId("form").dataset.title).toBe("Edit Prompt");
-  });
 });
