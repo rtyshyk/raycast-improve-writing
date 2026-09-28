@@ -61,6 +61,40 @@ describe("Improve Writing command", () => {
     expect(screen.getByTestId("detail")).toBeTruthy();
   });
 
+  it("re-reads the selection when Raycast returns the old clipboard instead", async () => {
+    Clipboard.readText.mockResolvedValue("amplitude");
+    getSelectedText.mockResolvedValueOnce("amplitude").mockResolvedValueOnce("Hey team, can I get access?");
+    const api = mockOpenRouter();
+    launch();
+    expect(await sentText(api)).toBe("<text>\nHey team, can I get access?\n</text>");
+    expect(getSelectedText).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps a selection that really matches the clipboard, e.g. after copying it", async () => {
+    Clipboard.readText.mockResolvedValue("copied and selected");
+    getSelectedText.mockResolvedValue("copied and selected");
+    const api = mockOpenRouter();
+    launch();
+    expect(await sentText(api)).toBe("<text>\ncopied and selected\n</text>");
+  });
+
+  it("keeps the first read when the retry fails", async () => {
+    Clipboard.readText.mockResolvedValue("same");
+    getSelectedText.mockResolvedValueOnce("same").mockRejectedValueOnce(new Error("no selection"));
+    const api = mockOpenRouter();
+    launch();
+    expect(await sentText(api)).toBe("<text>\nsame\n</text>");
+  });
+
+  it("reads the selection once when it differs from the clipboard", async () => {
+    Clipboard.readText.mockResolvedValue("something else");
+    getSelectedText.mockResolvedValue("selected text");
+    const api = mockOpenRouter();
+    launch();
+    await sentText(api);
+    expect(getSelectedText).toHaveBeenCalledTimes(1);
+  });
+
   it("uses text passed by a deeplink without reading the selection", async () => {
     const api = mockOpenRouter();
     launch({ text: "from a script" });
