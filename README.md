@@ -4,7 +4,7 @@ A Raycast 2 extension that works like Raycast AI's "Improve Writing", but runs o
 
 Select text in any app and run **Improve Writing**. The result streams in, then shows the changes highlighted against your selection: green for added text, red and struck through for removed text. Press ↵ to paste it over the selection.
 
-Type a follow-up in the search bar (e.g. "more casual", "shorter", "translate to Ukrainian") and press ↵ to revise the result. Each version stays in the list on the left, so ↑/↓ and ↵ paste an earlier one.
+Type a follow-up in the search bar (e.g. "more casual", "shorter", "translate to Ukrainian") and press ↵ to revise the result, or pick a preset with ⌘1…⌘6. Each version stays in the list on the left, so ↑/↓ and ↵ paste an earlier one.
 
 ## Install
 
@@ -24,6 +24,14 @@ Raycast asks for your OpenRouter API key on first run (https://openrouter.ai/key
 | ⌘R  | Regenerate                                                      |
 | ⌘M  | Change Model… (the pick is saved, then the text is regenerated) |
 | ⌘E  | Edit Prompt… (save, then the text is regenerated)               |
+| ⌘1  | Shorter                                                         |
+| ⌘2  | More Formal                                                     |
+| ⌘3  | More Casual                                                     |
+| ⌘4  | Fix Grammar Only (back to the original, no rewording)           |
+| ⌘5  | Translate to English                                            |
+| ⌘6  | Humanize (removes signs of AI writing)                          |
+
+Humanize sends [blader/humanizer](https://github.com/blader/humanizer)'s guide, vendored unchanged in `assets/humanizer/` (MIT, commit `225a6f3`), with the request. That adds about 8k input tokens to the Humanize request and to every later follow-up in the same view. To update it, replace `assets/humanizer/SKILL.md` with the newer upstream file.
 
 A script can pass the text directly instead of the selection: `raycast://extensions/roman.tyshyk/improve-writing-openrouter/improve-writing?context={"text":"…"}` (URL-encoded).
 

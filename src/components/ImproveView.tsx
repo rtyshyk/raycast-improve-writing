@@ -12,6 +12,7 @@ import { showFailureToast } from "@raycast/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { followUpHistory, generateTurn, turnPreview, TurnState } from "../lib/improve";
 import { renderText } from "../lib/preview";
+import { Preset, PRESETS, presetInstruction } from "../lib/presets";
 import { splitSelection, Turn } from "../lib/prompt";
 import { ModelList } from "./ModelList";
 import { PromptForm } from "./PromptForm";
@@ -27,12 +28,12 @@ export function ImproveView({ original }: { original: string }) {
   const abortRef = useRef<AbortController | null>(null);
   const diffCache = useRef(new WeakMap<Turn, string>());
 
-  async function generate(history: Turn[], instruction?: string) {
+  async function generate(history: Turn[], instruction?: string, title?: string) {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     const show = (state: TurnState) => {
-      if (abortRef.current === controller) setTurns([...history, { instruction, ...state }]);
+      if (abortRef.current === controller) setTurns([...history, { instruction, title, ...state }]);
     };
     show({ reply: "", status: "streaming" });
     const final = await generateTurn({
@@ -56,7 +57,7 @@ export function ImproveView({ original }: { original: string }) {
   const last = turns[turns.length - 1];
   const streaming = last.status === "streaming";
 
-  const regenerate = () => generate(turns.slice(0, -1), last.instruction);
+  const regenerate = () => generate(turns.slice(0, -1), last.instruction, last.title);
 
   const sendFollowUp = () => {
     const instruction = input.trim();
@@ -64,6 +65,9 @@ export function ImproveView({ original }: { original: string }) {
     setInput("");
     generate(followUpHistory(turns), instruction);
   };
+
+  const sendPreset = async (preset: Preset) =>
+    generate(followUpHistory(turns), await presetInstruction(preset), preset.title);
 
   // Finished turns keep their object identity, so each diff is computed once instead of on every stream flush.
   const preview = (turn: Turn) => {
@@ -129,6 +133,19 @@ export function ImproveView({ original }: { original: string }) {
         <Action.CopyToClipboard title="Copy Original" content={original} />
         <Action title="Open Extension Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
       </ActionPanel.Section>
+      {!streaming && (
+        <ActionPanel.Section title="Follow-Ups">
+          {PRESETS.map((preset) => (
+            <Action
+              key={preset.title}
+              title={preset.title}
+              icon={preset.icon}
+              shortcut={{ modifiers: ["cmd"], key: preset.key }}
+              onAction={() => sendPreset(preset)}
+            />
+          ))}
+        </ActionPanel.Section>
+      )}
     </ActionPanel>
   );
 
@@ -149,7 +166,7 @@ export function ImproveView({ original }: { original: string }) {
             key={turnId(i)}
             id={turnId(i)}
             icon={turn.instruction ? Icon.Message : Icon.Wand}
-            title={turn.instruction ?? "Improved"}
+            title={turn.title ?? turn.instruction ?? "Improved"}
             accessories={turn.status === "streaming" ? [{ tag: "writing…" }] : undefined}
             detail={<List.Item.Detail markdown={preview(turn)} />}
             actions={actions(turn.status === "done" ? turn.reply : "")}
