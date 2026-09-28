@@ -17,7 +17,7 @@ export const environment = {
   commandMode: "view",
   supportPath: "/tmp/raycast-test",
   assetsPath: "/tmp/raycast-test/assets",
-  isDevelopment: true,
+  isDevelopment: false,
   raycastVersion: "2.5.2",
 };
 
@@ -280,8 +280,10 @@ export function resetRaycastMock() {
   cacheStores.forEach((store) => store.clear());
   preferences = { ...DEFAULT_PREFERENCES };
   environment.appearance = "dark";
-  getSelectedText.mockImplementation(async () => {
+  // mockReset also drops queued once-values, so a test can't leak them into the next one.
+  getSelectedText.mockReset().mockImplementation(async () => {
     throw new Error("Cannot copy selected text from frontmost application.");
   });
-  Clipboard.readText.mockImplementation(async () => undefined);
+  Clipboard.readText.mockReset().mockImplementation(async () => undefined);
+  LocalStorage.getItem.mockReset().mockImplementation(async (key: string) => storage.get(key));
 }

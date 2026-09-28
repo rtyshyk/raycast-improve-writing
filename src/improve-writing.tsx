@@ -3,6 +3,7 @@ import {
   ActionPanel,
   Clipboard,
   Detail,
+  environment,
   getSelectedText,
   Icon,
   LaunchProps,
@@ -13,13 +14,34 @@ import { usePromise } from "@raycast/utils";
 import { useState } from "react";
 import { ImproveView } from "./components/ImproveView";
 
-async function readSelection() {
+const RETRY_MS = 150;
+
+async function selectedText() {
   try {
     const text = await getSelectedText();
     return text.trim() ? text : "";
   } catch {
     return "";
   }
+}
+
+// When an app hides its selection (Slack), Raycast simulates ⌘C and can read the clipboard before the copy
+// lands, returning whatever was copied last. A result equal to the old clipboard gets one more read.
+async function readSelection() {
+  const clipboard = await Clipboard.readText().catch(() => undefined);
+  const started = Date.now();
+  const first = await selectedText();
+  const suspect = Boolean(first) && first === clipboard;
+  const text = suspect ? await retry(first) : first;
+  if (environment.isDevelopment) {
+    console.log("[selection]", { length: text.length, suspect, changed: text !== first, ms: Date.now() - started });
+  }
+  return text;
+}
+
+async function retry(fallback: string) {
+  await new Promise((resolve) => setTimeout(resolve, RETRY_MS));
+  return (await selectedText()) || fallback;
 }
 
 // A deeplink can pass the text directly: raycast://extensions/…/improve-writing?context={"text":"…"}
