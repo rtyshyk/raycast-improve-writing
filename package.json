@@ -19,20 +19,6 @@
       "subtitle": "OpenRouter",
       "description": "Improve the selected text, see the changes highlighted, ask for follow-ups, then paste.",
       "mode": "view"
-    },
-    {
-      "name": "choose-model",
-      "title": "Choose Model",
-      "subtitle": "OpenRouter",
-      "description": "Pick the OpenRouter model used by Improve Writing.",
-      "mode": "view"
-    },
-    {
-      "name": "edit-prompt",
-      "title": "Edit Prompt",
-      "subtitle": "Improve Writing",
-      "description": "View and edit the prompt used by Improve Writing.",
-      "mode": "view"
     }
   ],
   "preferences": [
@@ -41,15 +27,17 @@
       "title": "OpenRouter API Key",
       "description": "Create one at openrouter.ai/keys",
       "type": "password",
-      "required": true
+      "required": true,
+      "placeholder": "sk-or-v1-…"
     },
     {
       "name": "defaultModel",
       "title": "Default Model",
-      "description": "OpenRouter model id, used until you pick one with Choose Model",
+      "description": "OpenRouter model id. After a result, ⌘M picks from the full model list and overrides this.",
       "type": "textfield",
       "default": "openai/gpt-6-luna",
-      "required": true
+      "required": true,
+      "placeholder": "openai/gpt-6-luna"
     },
     {
       "name": "reasoningEffort",
@@ -105,6 +93,7 @@
     "lint": "ray lint && eslint test vitest.config.mts && prettier --check test vitest.config.mts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p test"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test",
+    "publish": "npx @raycast/api@latest publish"
   }
 }
