@@ -27,7 +27,7 @@ export async function streamChat({ apiKey, model, messages, effort, signal, onDe
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://raycast.com",
+      "HTTP-Referer": "https://www.raycast.com/roman.tyshyk/improve-writing-openrouter",
       "X-Title": "Improve Writing (Raycast)",
     },
     body: JSON.stringify({
