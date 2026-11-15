@@ -39,6 +39,7 @@ describe("streamChat request", () => {
     expect(init?.headers).toMatchObject({
       Authorization: "Bearer sk-or-123",
       "Content-Type": "application/json",
+      "HTTP-Referer": "https://www.raycast.com/roman.tyshyk/improve-writing-openrouter",
       "X-Title": "Improve Writing (Raycast)",
     });
     expect(JSON.parse(String(init?.body))).toEqual({
